@@ -1,17 +1,18 @@
 from lm import LM
 from prompts import INTENT_AMBIGUITY_DETECTOR_MSSG, SCHEMA_AMBIGUITY_DETECTOR_MSSG 
+from knowledge_store import AmbiguityKnowledgeStore
 import json
 
-
-class IntentAmbiguityDetector:
+class IntentAmbiguityResolver:
     def __init__(self, model: str = "openai/gpt-oss-120b", max_iterations: int = 3):
         self.llm = LM(model=model)
+        self.knowledge_store = AmbiguityKnowledgeStore()
         self.max_iterations = max_iterations
 
     # -----------------------------
     # Internal LLM call
     # -----------------------------
-    def _detect_once(self, query, previous_clarifications):
+    def _detect_ambiguity(self, query, previous_clarifications):
         messages = INTENT_AMBIGUITY_DETECTOR_MSSG + [
             {
                 "role": "user",
@@ -38,26 +39,30 @@ class IntentAmbiguityDetector:
 
         clarifications = []
 
-        for idx, amb in enumerate(ambiguities, 1):
+        for idx, ambiguity in enumerate(ambiguities, 1):            
+            ambiguity_label = ambiguity["ambiguity_label"]
+            clarification_question = ambiguity["clarification_question"]
+            clarification_options = ambiguity["options"] 
+            
             print("\n----------------------------------")
-            print(f"Ambiguity {idx}: {amb['ambiguity_label']}")
-            print(amb["clarification_question"])
-            print("0. Write my own clarification")
-            for i, opt in enumerate(amb["options"], 1):
+            print(f"Ambiguity {idx}: {ambiguity_label}")
+            print(clarification_question)
+            print("0. Write clarification manually")
+            for i, opt in enumerate(clarification_options, 1):
                 print(f"{i}. {opt}")
 
-            choice = input("Select option number or 0: ").strip()
+            choice = input("Select option: ").strip()
 
             if choice == "0":
                 user_text = input("Enter your clarification: ")
             else:
                 try:
-                    user_text = amb["options"][int(choice) - 1]
+                    user_text = clarification_options[int(choice) - 1]
                 except:
                     user_text = input("Invalid choice. Enter clarification manually: ")
 
             clarifications.append({
-                "ambiguity_label": amb["ambiguity_label"],
+                "ambiguity_label": ambiguity_label,
                 "user_clarification": user_text
             })
 
@@ -66,7 +71,7 @@ class IntentAmbiguityDetector:
     # -----------------------------
     # PUBLIC LOOP METHOD
     # -----------------------------
-    def detect(self, query):
+    def resolver(self, query):
         """
         Runs iterative ambiguity resolution loop.
         """
@@ -77,14 +82,14 @@ class IntentAmbiguityDetector:
 
             print(f"\n========== Iteration {iteration+1} ==========")
 
-            ambiguities = self._detect_once(
+            ambiguities = self._detect_ambiguity(
                 query = query,
                 previous_clarifications = clarifications
             )
 
             # Stop if no ambiguity
             if not ambiguities:
-                print("No remaining ambiguities.")
+                print("========== No more ambiguities detected. ==========")
                 break
 
             # collect feedback
@@ -93,7 +98,7 @@ class IntentAmbiguityDetector:
             clarifications.extend(new_clarifications)
 
         return clarifications
-        
+
 class SchemaAmbiguityDetector:
     def __init__(self, model: str = "openai/gpt-oss-120b"):
         self.llm = LM(model = model)
@@ -109,6 +114,6 @@ class SchemaAmbiguityDetector:
         
         
 if __name__ == "__main__":
-    iad = IntentAmbiguityDetector()
-    result = iad.detect("show top 5 toothpaste")
+    iad = IntentAmbiguityResolver()
+    result = iad.resolver("show top 5 toothpaste")
     print(result)
