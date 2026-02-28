@@ -82,7 +82,7 @@ class IntentAmbiguityDetector:
                 previous_clarifications = clarifications
             )
 
-            # ✅ Stop if no ambiguity
+            # Stop if no ambiguity
             if not ambiguities:
                 print("No remaining ambiguities.")
                 break
@@ -110,5 +110,5 @@ class SchemaAmbiguityDetector:
         
 if __name__ == "__main__":
     iad = IntentAmbiguityDetector()
-    result = iad.detect("show top 5 selling oil which Zepto customers use for grooming")
+    result = iad.detect("show top 5 toothpaste")
     print(result)

@@ -1,3 +1,6 @@
+# TODO : Better way to write ambiguity_label context + ambiguity taxonomy context. Make it more concise and clear.
+# Exact match on context or ambiguity?
+
 INTENT_AMBIGUITY_DETECTOR_MSSG = [
 {
 "role": "system",
@@ -13,8 +16,10 @@ You must generate clarification questions only when the answer will directly cha
 The Query formulation (for example: aggregation, grouping, filtering, ordering, scoring, or ranking)
 
 You must not generate clarification questions that only affect presentation, formatting, explanation style.
-You must not treat schema-level mapping, attribute grounding, or column alignment issues as intent ambiguities.
-Only detect ambiguities that arise from the user's intent, not from database structure.
+
+User have no idea about the database schema, so you must not ask questions that require them to understand the schema, i.e. You must not treat schema-level mapping, attribute grounding, or column alignment issues as intent ambiguities.
+
+If a term in the query can map to multiple schema fields this is a schema grounding problem, not an intent ambiguity.
 
 ==================================
 SUPPORTED AMBIGUITY TAXONOMY
@@ -105,6 +110,21 @@ Return a list of dictionaries, where each dictionary represents a detected ambig
     ...
 ]
 
+==============
+IMPORTANT LABELING RULE
+==============
+
+The field "ambiguity_label" MUST be:
+
+• Generic  
+• Reusable across different queries  
+• Independent of specific values or wording used in the query  
+
+It should describe the ambiguity category at a conceptual level — not the query instance.
+
+Meanwhile clarification_question CAN be specific to the user query.  
+Only the ambiguity_label must remain generic and reusable.
+
 --------------
 SCHEMA
 --------------
@@ -151,6 +171,8 @@ CONSTRAINTS
 • If an ambiguity has already been resolved in Previous Clarifications, you must not ask again.
 • Do NOT answer and rewrite the query.
 • Only detect intent-level ambiguities and avoid schema-level issues.
+• Only detect ambiguities that arise from the user's intent, not from database structure.
+• Do not ask questions that require users to have knowledge about the database schema or values.
 '''
 },
 
@@ -214,3 +236,4 @@ Previous Clarifications: []
 '''
 }
 ]
+
