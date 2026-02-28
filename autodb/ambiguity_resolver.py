@@ -31,35 +31,63 @@ class IntentAmbiguityResolver:
     # Ask user clarification
     # -----------------------------
     def _collect_user_feedback(self, ambiguities):
-        """
-        Prompts user to either:
-        0. provide manual clarification or
-        1. choose an option
-        """
 
         clarifications = []
 
-        for idx, ambiguity in enumerate(ambiguities, 1):            
+        for idx, ambiguity in enumerate(ambiguities, 1):
+
             ambiguity_label = ambiguity["ambiguity_label"]
-            clarification_question = ambiguity["clarification_question"]
-            clarification_options = ambiguity["options"] 
-            
-            print("\n----------------------------------")
-            print(f"Ambiguity {idx}: {ambiguity_label}")
-            print(clarification_question)
-            print("0. Write clarification manually")
-            for i, opt in enumerate(clarification_options, 1):
-                print(f"{i}. {opt}")
+            question = ambiguity["clarification_question"]
+            options = ambiguity["options"]
 
-            choice = input("Select option: ").strip()
+            # -----------------------------
+            # 🔎 SEARCH KNOWLEDGE STORE
+            # -----------------------------
+            retrieved = self.knowledge_store.search(ambiguity_label)
 
-            if choice == "0":
-                user_text = input("Enter your clarification: ")
+            if retrieved["found"]:
+                print("\n✅ Found similar past ambiguity!")
+                print(f"Ambiguity: {ambiguity_label}")
+                print("Previously used clarifications:")
+
+                stored_options = retrieved["clarifications"]
+
+                for i, opt in enumerate(stored_options, 1):
+                    print(f"{i}. {opt}")
+
+                choice = input(
+                    "Select option (or 0 to override): "
+                ).strip()
+
+                if choice == "0":
+                    user_text = input("Enter clarification: ")
+                else:
+                    user_text = stored_options[int(choice) - 1]
+
             else:
-                try:
-                    user_text = clarification_options[int(choice) - 1]
-                except:
-                    user_text = input("Invalid choice. Enter clarification manually: ")
+                # -----------------------------
+                # Ask user normally
+                # -----------------------------
+                print("\n----------------------------------")
+                print(f"Ambiguity {idx}: {ambiguity_label}")
+                print(question)
+
+                print("0. Write clarification manually")
+                for i, opt in enumerate(options, 1):
+                    print(f"{i}. {opt}")
+
+                choice = input("Select option: ").strip()
+
+                if choice == "0":
+                    user_text = input("Enter clarification: ")
+                else:
+                    user_text = options[int(choice) - 1]
+
+                # ✅ STORE NEW KNOWLEDGE
+                self.knowledge_store.update(
+                    ambiguity_label,
+                    options
+                )
 
             clarifications.append({
                 "ambiguity_label": ambiguity_label,
