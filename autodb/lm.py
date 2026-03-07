@@ -18,7 +18,7 @@ class LM:
         model: str = "openai/gpt-oss-120b",
         api_key: str|None = os.getenv("GROQ_API_KEY"),
         retries: int = 3,
-        temperature: float = 0.0,
+        temperature: float = 0.2,
     ):
         self.model = model
         self.client = Groq(api_key=api_key)
