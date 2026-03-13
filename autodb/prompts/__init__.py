@@ -1,3 +1,4 @@
 from prompts.analyzer_mssg import ANALYZER_MSSG
 from prompts.intent_ambiguitiy_detector_mssg import INTENT_AMBIGUITY_DETECTOR_MSSG
-from prompts.schema_ambiguity_detector_mssg import SCHEMA_AMBIGUITY_DETECTOR_MSSG
+from prompts.value_ambiguity_detector_mssg import VALUE_AMBIGUITY_DETECTOR_MSSG
+

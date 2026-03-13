@@ -1,5 +1,5 @@
 from lm import LM
-from prompts import INTENT_AMBIGUITY_DETECTOR_MSSG, SCHEMA_AMBIGUITY_DETECTOR_MSSG 
+from prompts import INTENT_AMBIGUITY_DETECTOR_MSSG, VALUE_AMBIGUITY_DETECTOR_MSSG 
 from knowledge_store import AmbiguityKnowledgeStore
 import json
 
@@ -147,12 +147,12 @@ class IntentAmbiguityResolver:
 
         return clarifications
 
-class SchemaAmbiguityDetector:
+class ValueAmbiguityDetector:
     def __init__(self, model: str = "openai/gpt-oss-120b"):
         self.llm = LM(model = model)
 
     def detect(self, query):
-        messages = SCHEMA_AMBIGUITY_DETECTOR_MSSG + [{"role": "user", "content": f"Query: {query}"}]
+        messages = VALUE_AMBIGUITY_DETECTOR_MSSG + [{"role": "user", "content": f"Query: {query}"}]
         response = self.llm(messages)
 
         try:
@@ -163,5 +163,5 @@ class SchemaAmbiguityDetector:
 
 if __name__ == "__main__":
     iad = IntentAmbiguityResolver()
-    result = iad.resolve("show top 5 toothpaste")
+    result = iad.resolve("Show me the carbon footprints of brands which have sold twice the number of products in 2025 as compared to 2024")
     print(result)

@@ -1,7 +1,6 @@
 from autodb.ambiguity_resolver import IntentAmbiguityResolver
 
 
-b = a + 10 
 if __name__ == "__main__":
     
     # Example usage of IntentAmbiguityResolver
