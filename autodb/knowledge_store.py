@@ -3,13 +3,12 @@ import os
 import numpy as np
 from embedder import Embedder
 
-
 class AmbiguityKnowledgeStore:
 
     def __init__(
         self,
         path="ambiguity_store.json",
-        similarity_threshold=0.70,
+        similarity_threshold=0.75,
         recent_k=5,
         embedder=None
     ):
@@ -21,6 +20,14 @@ class AmbiguityKnowledgeStore:
 
         self.data = self._load_store()
         self.embeddings = self._load_embeddings()
+
+    # -------------------------
+    # Composite key helper
+    # -------------------------
+    @staticmethod
+    def make_search_key(ambiguity_key: str, context_key: str) -> str:
+        """Build a composite search key from ambiguity_key and context_key."""
+        return f"{ambiguity_key} | {context_key}"
 
     # -------------------------
     # Load / Save — JSON
@@ -49,11 +56,15 @@ class AmbiguityKnowledgeStore:
     # -------------------------
     # Search similar ambiguity
     # -------------------------
-    def search(self, ambiguity_label):
+    def search(self, ambiguity_key, context_key):
         """
+        Search for a past ambiguity using a composite key.
+
         Returns:
             {
-                "ambiguity_label": str,
+                "ambiguity_key": str,
+                "context_key": str,
+                "search_key": str,
                 "clarifications": [...],
                 "score": float
             }
@@ -63,7 +74,8 @@ class AmbiguityKnowledgeStore:
         if len(self.data["entries"]) == 0 or self.embeddings.size == 0:
             return {}
 
-        query_emb = self.embedder.embed(ambiguity_label)
+        search_key = self.make_search_key(ambiguity_key, context_key)
+        query_emb = self.embedder.embed(search_key)
 
         similarities = self.embedder.similarity(
             query_emb,
@@ -76,7 +88,9 @@ class AmbiguityKnowledgeStore:
         if best_score >= self.similarity_threshold:
             entry = self.data["entries"][best_idx]
             return {
-                "ambiguity_label": entry["ambiguity_label"],
+                "ambiguity_key": entry["ambiguity_key"],
+                "context_key": entry["context_key"],
+                "search_key": entry["search_key"],
                 "clarifications": entry["clarifications"],
                 "score": float(best_score)
             }
@@ -86,20 +100,21 @@ class AmbiguityKnowledgeStore:
     # -------------------------
     # Update store
     # -------------------------
-    def update(self, ambiguity_label, clarifications):
+    def update(self, ambiguity_key, context_key, clarifications):
         """
-        Add or update ambiguity knowledge.
+        Add or update ambiguity knowledge using composite key.
         Keeps only the most recent k clarifications per entry.
         """
 
         if type(clarifications) == str:
             clarifications = [clarifications]
 
-        embedding = self.embedder.embed(ambiguity_label)
+        search_key = self.make_search_key(ambiguity_key, context_key)
+        embedding = self.embedder.embed(search_key)
 
-        # Check if this label already exists (exact match)
+        # Check if this composite key already exists (exact match)
         for entry in self.data["entries"]:
-            if entry["ambiguity_label"] == ambiguity_label:
+            if entry["search_key"] == search_key:
                 # Merge and keep recent k
                 combined = entry["clarifications"] + clarifications
                 # Deduplicate while preserving order
@@ -115,7 +130,9 @@ class AmbiguityKnowledgeStore:
 
         # New entry
         self.data["entries"].append({
-            "ambiguity_label": ambiguity_label,
+            "ambiguity_key": ambiguity_key,
+            "context_key": context_key,
+            "search_key": search_key,
             "clarifications": clarifications[-self.recent_k:]
         })
 

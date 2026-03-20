@@ -1,5 +1,3 @@
-# TODO : Better way to write ambiguity_label context + ambiguity taxonomy context. Make it more concise and clear.
-# Exact match on context or ambiguity?
 
 INTENT_AMBIGUITY_DETECTOR_MSSG = [
 {
@@ -107,7 +105,8 @@ Return a list of dictionaries, where each dictionary represents a detected ambig
     {
         "ambiguity_type": "<type of ambiguity detected from the taxonomy>",
         "clarification_question": "<the question to ask the user to resolve the ambiguity>",
-        "ambiguity_label": "<short phrase describing the ambiguity>",
+        "ambiguity_key": "<short label for the type of ambiguity from the taxonomy, e.g. 'top ranking metric', 'time window', 'area scope'>",
+        "context_key": "<the domain entity or context this ambiguity applies to, e.g. 'products', 'customers', 'orders'>",
         "options": [
             "<option 1>",
             "<option 2>",
@@ -121,16 +120,18 @@ Return a list of dictionaries, where each dictionary represents a detected ambig
 IMPORTANT LABELING RULE
 ==============
 
-The field "ambiguity_label" MUST be:
+The field "ambiguity_key" MUST be:
+• Generic and reusable across different queries
+• Describes the ambiguity category at a conceptual level — not the query instance
+• Concise (3–5 words maximum), e.g. "top ranking metric", "time window", "area scope"
 
-• Generic and reusable across different queries  
-• Independent of specific values or wording used in the query 
-• Since it is a label make sure to write it concisely (3–5 words maximum) except when very necessary
+The field "context_key" MUST be:
+• The domain entity or noun the ambiguity applies to (1–3 words)
+• E.g. "products", "customers", "orders", "brands"
+• This differentiates the SAME ambiguity type applied to DIFFERENT entities
 
-It should describe the ambiguity category at a conceptual level — not the query instance.
-
-Meanwhile clarification_question CAN be specific to the user query.  
-Only the ambiguity_label must remain generic and reusable.
+clarification_question CAN be specific to the user query.
+Only ambiguity_key and context_key must remain generic and reusable.
 
 --------------
 SCHEMA
@@ -180,18 +181,10 @@ CONSTRAINTS
 • Do NOT answer and rewrite the query.
 • Only detect intent-level ambiguities and avoid schema-level issues.
 • Only detect ambiguities that arise from the user's intent, not from database structure.
-• Do not ask questions that require users to have knowledge about the database schema or values.
+• Do not ask questions that require users to have knowledge about the database schema or values so you cannot ask about which column or values to look for
 • Every option in the "options" list MUST be answerable within the current scope of available data (both structured database columns and unstructured knowledge).
 • Do not generate clarification questions for schema-level ambiguity.
-• Only detect ambiguities that arise from the user's intent, not from database structure.
-• Each clarification question must have between 2 and 4 multiple-choice
-  options.
-  Each option should be precise, mutually exclusive and free from further ambiguity.
 • Do NOT create options that introduce new ambiguity
-• If an ambiguity has already been resolved in Previous_feedback, you must
-  not ask again.
-• Do not introduce unnecessary ambiguities.
-
 '''
 },
 
@@ -225,7 +218,8 @@ Previous Clarifications: []
     {
         "ambiguity_type": "Temporal Reference Ambiguity",
         "clarification_question": "What time period does recently refer to?",
-        "ambiguity_label": "Recently bought product",
+        "ambiguity_key": "time window",
+        "context_key": "products",
         "options": [
             "last 7 days",
             "last 30 days",
@@ -235,7 +229,8 @@ Previous Clarifications: []
     {
         "ambiguity_type": "Spatial Reference Ambiguity",
         "clarification_question": "What geographic level should my area refer to?",
-        "ambiguity_label": "user's area",
+        "ambiguity_key": "area scope",
+        "context_key": "customers",
         "options": [
             "my city",
             "my pincode"
@@ -244,7 +239,8 @@ Previous Clarifications: []
     {
         "ambiguity_type": "Aggregation Semantics Ambiguity",
         "clarification_question": "How should top products be ranked?",
-        "ambiguity_label": "Top products",
+        "ambiguity_key": "top ranking metric",
+        "context_key": "products",
         "options": [
             "Total revenue",
             "Total quantity sold",

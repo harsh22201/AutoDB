@@ -1,0 +1,173 @@
+{
+  "entries": [
+    {
+      "ambiguity_key": "store performance metric",
+      "context_key": "products",
+      "search_key": "store performance metric | products",
+      "clarifications": [
+        "Average sale price"
+      ]
+    },
+    {
+      "ambiguity_key": "top ranking metric",
+      "context_key": "brands",
+      "search_key": "top ranking metric | brands",
+      "clarifications": [
+        "Total revenue generated",
+        "Total products sold"
+      ]
+    },
+    {
+      "ambiguity_key": "significance criterion",
+      "context_key": "products",
+      "search_key": "significance criterion | products",
+      "clarifications": [
+        "Lower average sale price (cheaper on Zepto)"
+      ]
+    },
+    {
+      "ambiguity_key": "comparison metric",
+      "context_key": "products",
+      "search_key": "comparison metric | products",
+      "clarifications": [
+        "selling price is cheaper"
+      ]
+    },
+    {
+      "ambiguity_key": "sales criteria definition",
+      "context_key": "products",
+      "search_key": "sales criteria definition | products",
+      "clarifications": [
+        "atleast 2 units sold"
+      ]
+    },
+    {
+      "ambiguity_key": "inventory metric",
+      "context_key": "products",
+      "search_key": "inventory metric | products",
+      "clarifications": [
+        "stock present"
+      ]
+    },
+    {
+      "ambiguity_key": "best customer metric",
+      "context_key": "customers",
+      "search_key": "best customer metric | customers",
+      "clarifications": [
+        "Highest total expenditure"
+      ]
+    },
+    {
+      "ambiguity_key": "result count",
+      "context_key": "customers",
+      "search_key": "result count | customers",
+      "clarifications": [
+        "All qualifying customers"
+      ]
+    },
+    {
+      "ambiguity_key": "demographic attributes",
+      "context_key": "customers",
+      "search_key": "demographic attributes | customers",
+      "clarifications": [
+        "Age (derived from date of birth) and membership tier"
+      ]
+    },
+    {
+      "ambiguity_key": "eco\u2011friendliness metric",
+      "context_key": "brands",
+      "search_key": "eco\u2011friendliness metric | brands",
+      "clarifications": [
+        "Sustainability certifications (e.g., USDA Organic, Fairtrade)"
+      ]
+    },
+    {
+      "ambiguity_key": "eco\u2011friendly ranking metric",
+      "context_key": "brands",
+      "search_key": "eco\u2011friendly ranking metric | brands",
+      "clarifications": [
+        "best rated certifications"
+      ]
+    },
+    {
+      "ambiguity_key": "area scope",
+      "context_key": "stores",
+      "search_key": "area scope | stores",
+      "clarifications": [
+        "City of Mumbai (all areas)"
+      ]
+    },
+    {
+      "ambiguity_key": "product type scope",
+      "context_key": "products",
+      "search_key": "product type scope | products",
+      "clarifications": [
+        "Cheese products and flavored\u2011milk products as separate lists"
+      ]
+    },
+    {
+      "ambiguity_key": "information scope",
+      "context_key": "general",
+      "search_key": "information scope | general",
+      "clarifications": [
+        "everything"
+      ]
+    },
+    {
+      "ambiguity_key": "data scope",
+      "context_key": "database",
+      "search_key": "data scope | database",
+      "clarifications": [
+        "i said everything no more questions"
+      ]
+    },
+    {
+      "ambiguity_key": "data domain",
+      "context_key": "data",
+      "search_key": "data domain | data",
+      "clarifications": [
+        "every data possible"
+      ]
+    },
+    {
+      "ambiguity_key": "time window",
+      "context_key": "transactions",
+      "search_key": "time window | transactions",
+      "clarifications": [
+        "The 7 days ending yesterday"
+      ]
+    },
+    {
+      "ambiguity_key": "time window",
+      "context_key": "brands",
+      "search_key": "time window | brands",
+      "clarifications": [
+        "last year reported"
+      ]
+    },
+    {
+      "ambiguity_key": "entity definition",
+      "context_key": "companies",
+      "search_key": "entity definition | companies",
+      "clarifications": [
+        "Product brands (the\u202fbrand\u202ffield)"
+      ]
+    },
+    {
+      "ambiguity_key": "product filter criteria",
+      "context_key": "products",
+      "search_key": "product filter criteria | products",
+      "clarifications": [
+        "products which are sweet"
+      ]
+    },
+    {
+      "ambiguity_key": "time window",
+      "context_key": "companies",
+      "search_key": "time window | companies",
+      "clarifications": [
+        "All time (entire dataset)"
+      ]
+    }
+  ]
+}

@@ -70,23 +70,25 @@ class IntentAmbiguityResolver:
 
             ambiguity_type = ambiguity["ambiguity_type"]
             clarification_question = ambiguity["clarification_question"]
-            ambiguity_label = ambiguity["ambiguity_label"]
+            ambiguity_key = ambiguity["ambiguity_key"]
+            context_key = ambiguity["context_key"]
             options = ambiguity["options"]
 
             # -----------------------------
             # Display (universal)
             # -----------------------------
+            composite_label = f"{ambiguity_key} | {context_key}"
             print("\n----------------------------------")
             print(f"Ambiguity {idx}: [{ambiguity_type}] {clarification_question}")
-            print(f"Ambiguity Label: {ambiguity_label}")
+            print(f"Key: {composite_label}")
 
             # -----------------------------
             # 🔎 SEARCH KNOWLEDGE STORE
             # -----------------------------
-            retrieved = self.knowledge_store.search(ambiguity_label)
+            retrieved = self.knowledge_store.search(ambiguity_key, context_key)
 
             if retrieved:
-                print(f"Found similar past ambiguity! [{retrieved['ambiguity_label']}|{retrieved['score']:.2f}]")
+                print(f"Found similar past ambiguity! [{retrieved['search_key']}|{retrieved['score']:.2f}]")
                 print("Previously used clarifications:")
                 stored_options = retrieved["clarifications"]
                 user_text, is_manual = self._get_user_choice(stored_options)
@@ -94,7 +96,8 @@ class IntentAmbiguityResolver:
                 # Only update store if user typed manually
                 if is_manual:
                     self.knowledge_store.update(
-                        ambiguity_label,
+                        ambiguity_key,
+                        context_key,
                         user_text
                     )
 
@@ -106,7 +109,8 @@ class IntentAmbiguityResolver:
 
                 # STORE NEW KNOWLEDGE (only the chosen/typed clarification)
                 self.knowledge_store.update(
-                    ambiguity_label,
+                    ambiguity_key,
+                    context_key,
                     user_text
                 )
 

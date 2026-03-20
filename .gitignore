@@ -7,3 +7,6 @@ __pycache__/
 
 # Virtual environment
 venv/
+
+# specific python file
+sql_executor2.py

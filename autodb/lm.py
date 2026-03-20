@@ -64,7 +64,7 @@ if __name__ == "__main__":
     lm = LM()
     test_messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "What is the capital of France?"}
+        {"role": "user", "content": "What is 93251 divide by 893425"}
     ]
     response = lm(test_messages)
     print("LM Response:", response)

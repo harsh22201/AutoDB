@@ -73,8 +73,8 @@ SCHEMA
     - product_id
     - product_name
     - category
-    - sub-category
-    - sub-sub-category
+    - sub_category
+    - sub_sub_category
     - brand
     - market_price
     - sale_price
@@ -107,11 +107,11 @@ SCHEMA
 ==============
 CONSTRAINTS
 ==============
-• Ensure to detailed intent summary by incorporating all intent clarifications.
-• If SQL alone can answer the query, classify it as *structured*.
-• If part of the query uses structured fields and part requires LLM knowledge, classify it as *hybrid*.
-• If the query cannot be even partially answered using structured fields, classify it as *undefined* — do NOT attempt to answer just using LLM knowledge.
-• Ensure clear distinction between SQL-queryable elements and those requiring LLM-based interpretation.
+1. Ensure to detailed intent summary by incorporating all intent clarifications.
+2. If SQL alone can answer the query, classify it as *structured*.
+3. If part of the query uses structured fields and part requires LLM knowledge, classify it as *hybrid*.
+4. If the query cannot be even partially answered using structured fields, classify it as *undefined* — do NOT attempt to answer just using LLM knowledge.
+5. Ensure clear distinction between SQL-queryable elements and those requiring LLM-based interpretation.
 '''
 },
 
@@ -148,7 +148,7 @@ Clarifications: [{'clarification_question': 'By which metric should the top 10 p
     ]
 }
 '''
-} 
+},
 {
 "role": "user",
 "content": '''Query: "Show me the carbon footprints of brands which have sold twice the number of products in 2025 as compared to 2024"

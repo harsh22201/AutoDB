@@ -27,7 +27,7 @@ class Embedder:
             raise ValueError(f"Model must be one of {self.AVAILABLE_MODELS}")
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model = SentenceTransformer(model_name, device=self.device)
+        self.model:SentenceTransformer = SentenceTransformer(model_name, device=self.device)
         self.normalize_embeddings = normalize_embeddings
 
     # -------------------------------------------------
@@ -41,7 +41,7 @@ class Embedder:
             texts,
             convert_to_numpy=True,
             normalize_embeddings=self.normalize_embeddings,
-            show_progress_bar=isinstance(texts, list),
+            # show_progress_bar=isinstance(texts, list),
             batch_size=32
         )
 
@@ -68,17 +68,18 @@ class Embedder:
 
 
 if __name__ == "__main__":
-    embeddor = Embedder()
+    embeddor = Embedder(model_name="multi-qa-MiniLM-L6-cos-v1")
     docs = [
-        "What are the top selling products in the last month?",
-        "List customers with expenditure greater than 10000.",
-        "Show me the sales trend for the last quarter.",
-        "What are the top selling products most recently?",
-        "Which products sold the most recently?",
+        "web development",
+        "IT",
+        "Artifical Intelligence",
+        "hardware",
+        "software"
     ]
     
-    query = "Which products sold the most recently?"
+    query = "web development"
     doc_embeddings = embeddor.embed(docs)
     query_embedding = embeddor.embed(query)
     similarities = embeddor.similarity(query_embedding, doc_embeddings)
+    similarities = embeddor.model.similarity(query_embedding, doc_embeddings)
     print(similarities)

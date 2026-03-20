@@ -1,5 +1,5 @@
-from lm import LM
-from prompts import ANALYZER_MSSG
+from autodb.lm import LM
+from autodb.prompts import ANALYZER_MSSG
 import json
 
 class Analyzer:
