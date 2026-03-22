@@ -8,26 +8,16 @@ class AmbiguityKnowledgeStore:
     def __init__(
         self,
         path="ambiguity_store.json",
-        similarity_threshold=0.75,
-        recent_k=5,
+        context_threshold=0.80,
+        ambiguity_threshold=0.75,
         embedder=None
     ):
         self.path = path
-        self.embeddings_path = os.path.splitext(path)[0] + "_embeddings.npy" 
-        self.similarity_threshold = similarity_threshold
-        self.recent_k = recent_k
+        self.context_threshold = context_threshold
+        self.ambiguity_threshold = ambiguity_threshold
         self.embedder = embedder or Embedder()
 
         self.data = self._load_store()
-        self.embeddings = self._load_embeddings()
-
-    # -------------------------
-    # Composite key helper
-    # -------------------------
-    @staticmethod
-    def make_search_key(ambiguity_key: str, context_key: str) -> str:
-        """Build a composite search key from ambiguity_key and context_key."""
-        return f"{ambiguity_key} | {context_key}"
 
     # -------------------------
     # Load / Save — JSON
@@ -43,104 +33,148 @@ class AmbiguityKnowledgeStore:
             json.dump(self.data, f, indent=2)
 
     # -------------------------
-    # Load / Save — Embeddings
-    # -------------------------
-    def _load_embeddings(self):
-        if os.path.exists(self.embeddings_path):
-            return np.load(self.embeddings_path)
-        return np.empty((0, 0))
-
-    def _save_embeddings(self):
-        np.save(self.embeddings_path, self.embeddings)
-
-    # -------------------------
-    # Search similar ambiguity
+    # Two-stage search
     # -------------------------
     def search(self, ambiguity_key, context_key):
         """
-        Search for a past ambiguity using a composite key.
+        Two-stage filtering search:
+          Stage 1: Filter entries by context_key similarity.
+          Stage 2: Among filtered entries, find best ambiguity_key match.
 
         Returns:
             {
                 "ambiguity_key": str,
                 "context_key": str,
-                "search_key": str,
-                "clarifications": [...],
+                "options": [{"text": str, "count": int, "percentage": float}, ...],
                 "score": float
             }
             or {} if no match found.
         """
 
-        if len(self.data["entries"]) == 0 or self.embeddings.size == 0:
+        entries = self.data["entries"]
+        if not entries:
             return {}
 
-        search_key = self.make_search_key(ambiguity_key, context_key)
-        query_emb = self.embedder.embed(search_key)
+        # --- Stage 1: Context key filtering ---
+        stored_context_keys = [e["context_key"] for e in entries]
+        query_context_emb = self.embedder.embed(context_key)
+        stored_context_embs = self.embedder.embed(stored_context_keys)
 
-        similarities = self.embedder.similarity(
-            query_emb,
-            self.embeddings
-        )
+        # Handle single entry case (1-D embedding)
+        if stored_context_embs.ndim == 1:
+            stored_context_embs = stored_context_embs.reshape(1, -1)
 
-        best_idx = int(np.argmax(similarities))
-        best_score = similarities[best_idx]
+        context_sims = self.embedder.similarity(query_context_emb, stored_context_embs)
 
-        if best_score >= self.similarity_threshold:
-            entry = self.data["entries"][best_idx]
-            return {
-                "ambiguity_key": entry["ambiguity_key"],
-                "context_key": entry["context_key"],
-                "search_key": entry["search_key"],
-                "clarifications": entry["clarifications"],
-                "score": float(best_score)
-            }
+        # Filter indices that pass context threshold
+        context_candidates = [
+            (i, context_sims[i])
+            for i in range(len(entries))
+            if context_sims[i] >= self.context_threshold
+        ]
 
-        return {}
+        if not context_candidates:
+            return {}
+
+        # --- Stage 2: Ambiguity key filtering ---
+        candidate_indices = [idx for idx, _ in context_candidates]
+        stored_ambiguity_keys = [entries[i]["ambiguity_key"] for i in candidate_indices]
+        query_ambiguity_emb = self.embedder.embed(ambiguity_key)
+        stored_ambiguity_embs = self.embedder.embed(stored_ambiguity_keys)
+
+        if stored_ambiguity_embs.ndim == 1:
+            stored_ambiguity_embs = stored_ambiguity_embs.reshape(1, -1)
+
+        ambiguity_sims = self.embedder.similarity(query_ambiguity_emb, stored_ambiguity_embs)
+
+        best_local_idx = int(np.argmax(ambiguity_sims))
+        best_score = float(ambiguity_sims[best_local_idx])
+
+        if best_score < self.ambiguity_threshold:
+            return {}
+
+        best_entry = entries[candidate_indices[best_local_idx]]
+
+        # Compute percentages and get top 3
+        options = best_entry["options"]
+        total_count = sum(opt["count"] for opt in options)
+
+        options_with_pct = []
+        for opt in options:
+            pct = (opt["count"] / total_count * 100) if total_count > 0 else 0.0
+            options_with_pct.append({
+                "text": opt["text"],
+                "count": opt["count"],
+                "percentage": round(pct, 1)
+            })
+
+        # Sort by count descending, take top 3
+        options_with_pct.sort(key=lambda x: x["count"], reverse=True)
+        top_3 = options_with_pct[:3]
+
+        return {
+            "ambiguity_key": best_entry["ambiguity_key"],
+            "context_key": best_entry["context_key"],
+            "options": top_3,
+            "score": best_score
+        }
 
     # -------------------------
     # Update store
     # -------------------------
-    def update(self, ambiguity_key, context_key, clarifications):
+    def update(self, ambiguity_key, context_key, selected_option, all_options=None):
         """
-        Add or update ambiguity knowledge using composite key.
-        Keeps only the most recent k clarifications per entry.
+        Add or update ambiguity knowledge.
+
+        Args:
+            ambiguity_key: The ambiguity category label.
+            context_key: The domain entity context.
+            selected_option: The option the user chose (str).
+            all_options: All LLM-generated options (list of str). Used when
+                         creating a new entry to store all options.
         """
 
-        if type(clarifications) == str:
-            clarifications = [clarifications]
+        if all_options is None:
+            all_options = [selected_option]
 
-        search_key = self.make_search_key(ambiguity_key, context_key)
-        embedding = self.embedder.embed(search_key)
-
-        # Check if this composite key already exists (exact match)
+        # Check if this exact key pair already exists
         for entry in self.data["entries"]:
-            if entry["search_key"] == search_key:
-                # Merge and keep recent k
-                combined = entry["clarifications"] + clarifications
-                # Deduplicate while preserving order
-                seen = set()
-                unique = []
-                for c in combined:
-                    if c not in seen:
-                        seen.add(c)
-                        unique.append(c)
-                entry["clarifications"] = unique[-self.recent_k:]
+            if entry["ambiguity_key"] == ambiguity_key and entry["context_key"] == context_key:
+                # Increment count for selected option
+                found = False
+                for opt in entry["options"]:
+                    if opt["text"] == selected_option:
+                        opt["count"] += 1
+                        found = True
+                        break
+
+                # If selected option is new (e.g. user typed manually), add it
+                if not found:
+                    entry["options"].append({"text": selected_option, "count": 1})
+
+                # Merge any new options from all_options that don't exist yet
+                existing_texts = {opt["text"] for opt in entry["options"]}
+                for opt_text in all_options:
+                    if opt_text not in existing_texts:
+                        entry["options"].append({"text": opt_text, "count": 0})
+
                 self._save_store()
                 return
 
-        # New entry
+        # New entry — store all options, selected gets count 1, rest get 0
+        new_options = []
+        for opt_text in all_options:
+            count = 1 if opt_text == selected_option else 0
+            new_options.append({"text": opt_text, "count": count})
+
+        # If selected_option wasn't in all_options, add it too
+        if selected_option not in all_options:
+            new_options.append({"text": selected_option, "count": 1})
+
         self.data["entries"].append({
             "ambiguity_key": ambiguity_key,
             "context_key": context_key,
-            "search_key": search_key,
-            "clarifications": clarifications[-self.recent_k:]
+            "options": new_options
         })
 
-        # Append embedding
-        if self.embeddings.size == 0:
-            self.embeddings = embedding.reshape(1, -1)
-        else:
-            self.embeddings = np.vstack([self.embeddings, embedding.reshape(1, -1)])
-
         self._save_store()
-        self._save_embeddings()

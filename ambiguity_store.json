@@ -1,172 +1,91 @@
 {
   "entries": [
     {
-      "ambiguity_key": "store performance metric",
-      "context_key": "products",
-      "search_key": "store performance metric | products",
-      "clarifications": [
-        "Average sale price"
-      ]
-    },
-    {
-      "ambiguity_key": "top ranking metric",
+      "ambiguity_key": "sales count metric",
       "context_key": "brands",
-      "search_key": "top ranking metric | brands",
-      "clarifications": [
-        "Total revenue generated",
-        "Total products sold"
+      "options": [
+        {
+          "text": "Total quantity sold (sum of quantity)",
+          "count": 2
+        },
+        {
+          "text": "Number of distinct products sold",
+          "count": 0
+        },
+        {
+          "text": "Total quantity sold",
+          "count": 1
+        }
       ]
     },
     {
-      "ambiguity_key": "significance criterion",
-      "context_key": "products",
-      "search_key": "significance criterion | products",
-      "clarifications": [
-        "Lower average sale price (cheaper on Zepto)"
-      ]
-    },
-    {
-      "ambiguity_key": "comparison metric",
-      "context_key": "products",
-      "search_key": "comparison metric | products",
-      "clarifications": [
-        "selling price is cheaper"
-      ]
-    },
-    {
-      "ambiguity_key": "sales criteria definition",
-      "context_key": "products",
-      "search_key": "sales criteria definition | products",
-      "clarifications": [
-        "atleast 2 units sold"
-      ]
-    },
-    {
-      "ambiguity_key": "inventory metric",
-      "context_key": "products",
-      "search_key": "inventory metric | products",
-      "clarifications": [
-        "stock present"
-      ]
-    },
-    {
-      "ambiguity_key": "best customer metric",
-      "context_key": "customers",
-      "search_key": "best customer metric | customers",
-      "clarifications": [
-        "Highest total expenditure"
-      ]
-    },
-    {
-      "ambiguity_key": "result count",
-      "context_key": "customers",
-      "search_key": "result count | customers",
-      "clarifications": [
-        "All qualifying customers"
-      ]
-    },
-    {
-      "ambiguity_key": "demographic attributes",
-      "context_key": "customers",
-      "search_key": "demographic attributes | customers",
-      "clarifications": [
-        "Age (derived from date of birth) and membership tier"
-      ]
-    },
-    {
-      "ambiguity_key": "eco\u2011friendliness metric",
+      "ambiguity_key": "comparison threshold",
       "context_key": "brands",
-      "search_key": "eco\u2011friendliness metric | brands",
-      "clarifications": [
-        "Sustainability certifications (e.g., USDA Organic, Fairtrade)"
+      "options": [
+        {
+          "text": "Exactly twice as many",
+          "count": 1
+        },
+        {
+          "text": "At least twice as many",
+          "count": 1
+        },
+        {
+          "text": "Exactly double",
+          "count": 0
+        },
+        {
+          "text": "At least double (\u2265 2\u00d7)",
+          "count": 0
+        },
+        {
+          "text": "More than double (> 2\u00d7)",
+          "count": 0
+        }
       ]
     },
     {
-      "ambiguity_key": "eco\u2011friendly ranking metric",
+      "ambiguity_key": "carbon footprint metric",
       "context_key": "brands",
-      "search_key": "eco\u2011friendly ranking metric | brands",
-      "clarifications": [
-        "best rated certifications"
+      "options": [
+        {
+          "text": "Total CO\u2082 emissions (absolute)",
+          "count": 1
+        },
+        {
+          "text": "Average CO\u2082 emissions per unit sold",
+          "count": 1
+        },
+        {
+          "text": "CO\u2082 emissions per unit of revenue",
+          "count": 0
+        },
+        {
+          "text": "Total carbon emissions (overall amount)",
+          "count": 0
+        },
+        {
+          "text": "Average carbon emissions per unit sold",
+          "count": 0
+        },
+        {
+          "text": "Carbon emissions per revenue (kg CO\u2082 per $)",
+          "count": 0
+        }
       ]
     },
     {
-      "ambiguity_key": "area scope",
-      "context_key": "stores",
-      "search_key": "area scope | stores",
-      "clarifications": [
-        "City of Mumbai (all areas)"
-      ]
-    },
-    {
-      "ambiguity_key": "product type scope",
+      "ambiguity_key": "product count metric",
       "context_key": "products",
-      "search_key": "product type scope | products",
-      "clarifications": [
-        "Cheese products and flavored\u2011milk products as separate lists"
-      ]
-    },
-    {
-      "ambiguity_key": "information scope",
-      "context_key": "general",
-      "search_key": "information scope | general",
-      "clarifications": [
-        "everything"
-      ]
-    },
-    {
-      "ambiguity_key": "data scope",
-      "context_key": "database",
-      "search_key": "data scope | database",
-      "clarifications": [
-        "i said everything no more questions"
-      ]
-    },
-    {
-      "ambiguity_key": "data domain",
-      "context_key": "data",
-      "search_key": "data domain | data",
-      "clarifications": [
-        "every data possible"
-      ]
-    },
-    {
-      "ambiguity_key": "time window",
-      "context_key": "transactions",
-      "search_key": "time window | transactions",
-      "clarifications": [
-        "The 7 days ending yesterday"
-      ]
-    },
-    {
-      "ambiguity_key": "time window",
-      "context_key": "brands",
-      "search_key": "time window | brands",
-      "clarifications": [
-        "last year reported"
-      ]
-    },
-    {
-      "ambiguity_key": "entity definition",
-      "context_key": "companies",
-      "search_key": "entity definition | companies",
-      "clarifications": [
-        "Product brands (the\u202fbrand\u202ffield)"
-      ]
-    },
-    {
-      "ambiguity_key": "product filter criteria",
-      "context_key": "products",
-      "search_key": "product filter criteria | products",
-      "clarifications": [
-        "products which are sweet"
-      ]
-    },
-    {
-      "ambiguity_key": "time window",
-      "context_key": "companies",
-      "search_key": "time window | companies",
-      "clarifications": [
-        "All time (entire dataset)"
+      "options": [
+        {
+          "text": "Total quantity sold (sum of quantity)",
+          "count": 1
+        },
+        {
+          "text": "Number of distinct product IDs sold",
+          "count": 0
+        }
       ]
     }
   ]

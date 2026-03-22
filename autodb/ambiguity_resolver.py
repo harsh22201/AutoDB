@@ -72,15 +72,14 @@ class IntentAmbiguityResolver:
             clarification_question = ambiguity["clarification_question"]
             ambiguity_key = ambiguity["ambiguity_key"]
             context_key = ambiguity["context_key"]
-            options = ambiguity["options"]
+            llm_options = ambiguity["options"]
 
             # -----------------------------
             # Display (universal)
             # -----------------------------
-            composite_label = f"{ambiguity_key} | {context_key}"
             print("\n----------------------------------")
             print(f"Ambiguity {idx}: [{ambiguity_type}] {clarification_question}")
-            print(f"Key: {composite_label}")
+            print(f"Key: {ambiguity_key} | {context_key}")
 
             # -----------------------------
             # 🔎 SEARCH KNOWLEDGE STORE
@@ -88,30 +87,45 @@ class IntentAmbiguityResolver:
             retrieved = self.knowledge_store.search(ambiguity_key, context_key)
 
             if retrieved:
-                print(f"Found similar past ambiguity! [{retrieved['search_key']}|{retrieved['score']:.2f}]")
+                print(f"Found similar past ambiguity! [score: {retrieved['score']:.2f}]")
                 print("Previously used clarifications:")
-                stored_options = retrieved["clarifications"]
-                user_text, is_manual = self._get_user_choice(stored_options)
+                stored_options = retrieved["options"]  # top 3 with percentages
 
-                # Only update store if user typed manually
-                if is_manual:
-                    self.knowledge_store.update(
-                        ambiguity_key,
-                        context_key,
-                        user_text
-                    )
+                # Display with percentages
+                display_options = []
+                for opt in stored_options:
+                    display_options.append(f"{opt['text']} ({opt['percentage']}%)")
 
-            else:
-                # -----------------------------
-                # Ask user normally
-                # -----------------------------
-                user_text, _ = self._get_user_choice(options)
+                user_text, is_manual = self._get_user_choice(display_options)
 
-                # STORE NEW KNOWLEDGE (only the chosen/typed clarification)
+                # Strip percentage suffix if user selected a numbered option
+                if not is_manual:
+                    # Extract original text (remove the " (XX.X%)" suffix)
+                    for opt in stored_options:
+                        if user_text == f"{opt['text']} ({opt['percentage']}%)":
+                            user_text = opt["text"]
+                            break
+
+                # Always update store with selection
                 self.knowledge_store.update(
                     ambiguity_key,
                     context_key,
-                    user_text
+                    selected_option=user_text,
+                    all_options=llm_options
+                )
+
+            else:
+                # -----------------------------
+                # Ask user normally (first time)
+                # -----------------------------
+                user_text, _ = self._get_user_choice(llm_options)
+
+                # STORE ALL LLM OPTIONS — selected gets count 1, rest get 0
+                self.knowledge_store.update(
+                    ambiguity_key,
+                    context_key,
+                    selected_option=user_text,
+                    all_options=llm_options
                 )
 
             clarifications.append({
