@@ -8,8 +8,8 @@ class AmbiguityKnowledgeStore:
     def __init__(
         self,
         path="ambiguity_store.json",
-        context_threshold=0.80,
-        ambiguity_threshold=0.75,
+        context_threshold=0.85,
+        ambiguity_threshold=0.60,
         embedder=None
     ):
         self.path = path
@@ -25,8 +25,10 @@ class AmbiguityKnowledgeStore:
     def _load_store(self):
         if os.path.exists(self.path):
             with open(self.path, "r") as f:
-                return json.load(f)
-        return {"entries": []}
+                try:
+                    return json.load(f)
+                except json.JSONDecodeError:
+                    return {}
 
     def _save_store(self):
         with open(self.path, "w") as f:
@@ -38,8 +40,8 @@ class AmbiguityKnowledgeStore:
     def search(self, ambiguity_key, context_key):
         """
         Two-stage filtering search:
-          Stage 1: Filter entries by context_key similarity.
-          Stage 2: Among filtered entries, find best ambiguity_key match.
+          Stage 1: Find matching context_key via embedding similarity.
+          Stage 2: Among ambiguities under that context, find best ambiguity_key match.
 
         Returns:
             {
@@ -51,12 +53,11 @@ class AmbiguityKnowledgeStore:
             or {} if no match found.
         """
 
-        entries = self.data["entries"]
-        if not entries:
+        if not self.data:
             return {}
 
         # --- Stage 1: Context key filtering ---
-        stored_context_keys = [e["context_key"] for e in entries]
+        stored_context_keys = list(self.data.keys())
         query_context_emb = self.embedder.embed(context_key)
         stored_context_embs = self.embedder.embed(stored_context_keys)
 
@@ -66,19 +67,21 @@ class AmbiguityKnowledgeStore:
 
         context_sims = self.embedder.similarity(query_context_emb, stored_context_embs)
 
-        # Filter indices that pass context threshold
-        context_candidates = [
-            (i, context_sims[i])
-            for i in range(len(entries))
-            if context_sims[i] >= self.context_threshold
-        ]
+        # Find best context match above threshold
+        best_context_idx = int(np.argmax(context_sims))
+        best_context_score = float(context_sims[best_context_idx])
 
-        if not context_candidates:
+        if best_context_score < self.context_threshold:
+            return {}
+
+        matched_context_key = stored_context_keys[best_context_idx]
+        ambiguities = self.data[matched_context_key]
+
+        if not ambiguities:
             return {}
 
         # --- Stage 2: Ambiguity key filtering ---
-        candidate_indices = [idx for idx, _ in context_candidates]
-        stored_ambiguity_keys = [entries[i]["ambiguity_key"] for i in candidate_indices]
+        stored_ambiguity_keys = [a["ambiguity_key"] for a in ambiguities]
         query_ambiguity_emb = self.embedder.embed(ambiguity_key)
         stored_ambiguity_embs = self.embedder.embed(stored_ambiguity_keys)
 
@@ -87,13 +90,13 @@ class AmbiguityKnowledgeStore:
 
         ambiguity_sims = self.embedder.similarity(query_ambiguity_emb, stored_ambiguity_embs)
 
-        best_local_idx = int(np.argmax(ambiguity_sims))
-        best_score = float(ambiguity_sims[best_local_idx])
+        best_amb_idx = int(np.argmax(ambiguity_sims))
+        best_score = float(ambiguity_sims[best_amb_idx])
 
         if best_score < self.ambiguity_threshold:
             return {}
 
-        best_entry = entries[candidate_indices[best_local_idx]]
+        best_entry = ambiguities[best_amb_idx]
 
         # Compute percentages and get top 3
         options = best_entry["options"]
@@ -114,9 +117,10 @@ class AmbiguityKnowledgeStore:
 
         return {
             "ambiguity_key": best_entry["ambiguity_key"],
-            "context_key": best_entry["context_key"],
+            "context_key": matched_context_key,
             "options": top_3,
-            "score": best_score
+            "ambiguity_score": best_score,
+            "context_score": best_context_score
         }
 
     # -------------------------
@@ -137,9 +141,15 @@ class AmbiguityKnowledgeStore:
         if all_options is None:
             all_options = [selected_option]
 
-        # Check if this exact key pair already exists
-        for entry in self.data["entries"]:
-            if entry["ambiguity_key"] == ambiguity_key and entry["context_key"] == context_key:
+        # --- Ensure context exists ---
+        if context_key not in self.data:
+            self.data[context_key] = []
+
+        ambiguities = self.data[context_key]
+
+        # --- Check if this ambiguity_key already exists under this context ---
+        for entry in ambiguities:
+            if entry["ambiguity_key"] == ambiguity_key:
                 # Increment count for selected option
                 found = False
                 for opt in entry["options"]:
@@ -161,7 +171,7 @@ class AmbiguityKnowledgeStore:
                 self._save_store()
                 return
 
-        # New entry — store all options, selected gets count 1, rest get 0
+        # --- New ambiguity under this context ---
         new_options = []
         for opt_text in all_options:
             count = 1 if opt_text == selected_option else 0
@@ -171,9 +181,8 @@ class AmbiguityKnowledgeStore:
         if selected_option not in all_options:
             new_options.append({"text": selected_option, "count": 1})
 
-        self.data["entries"].append({
+        ambiguities.append({
             "ambiguity_key": ambiguity_key,
-            "context_key": context_key,
             "options": new_options
         })
 

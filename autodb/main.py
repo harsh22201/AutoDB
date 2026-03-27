@@ -4,15 +4,17 @@ from autodb.ambiguity_resolver import IntentAmbiguityResolver
 from autodb.candidate_retriever import CandidateRetriever
 from autodb.analyzer import Analyzer
 from autodb.decomposer import Decomposer
-
+from autodb.llm_executor import LLM_Executor
 
 def main():
     # Initialize components
     sql_executor = SQLExecutor()
-    detector = IntentAmbiguityResolver()
+    detector = IntentAmbiguityResolver(model="openai/gpt-oss-20b")
+    print(detector.llm.temperature, detector.llm.model)
     analyzer = Analyzer(model="openai/gpt-oss-120b")
     candidate_retriever = CandidateRetriever(sql_executor=sql_executor)
     decomposer = Decomposer(model="openai/gpt-oss-120b")
+    llm_executor = LLM_Executor(model="openai/gpt-oss-120b")
     
     print("\n===========================================")
     print("Welcome to AutoDB Query Pipeline")
@@ -65,13 +67,28 @@ def main():
 
             print("\n[SYSTEM] --- Step 5: SQL Execution ---")
             structured_query = decomposition.get("structured_query", "")
+            df = None
             if structured_query:
                 df = sql_executor.execute(structured_query)
                 print(f"[INFO] SQL Result ({len(df)} rows):")
                 print(df.head(20).to_string(index=False))
             else:
                 print("[INFO] No structured query to execute.")
+                df = "No structured query executed."
                 
+            print("\n[SYSTEM] --- Step 6: Final LLM Answer Generation ---")
+            unstructured_query = decomposition.get("unstructured_query", "")
+            final_answer = llm_executor.execute(
+                sql_result=df, 
+                unstructured_query=unstructured_query,
+                original_query=query
+            )
+            print("\n===========================================")
+            print("[AUTO DB FINAL ANSWER]")
+            print("===========================================")
+            print(final_answer)
+            print("===========================================\n")
+            
             print("\n[SYSTEM] Pipeline finished for query.")
         except Exception as e:
             print(f"\n[ERROR] Pipeline failed: {e}")

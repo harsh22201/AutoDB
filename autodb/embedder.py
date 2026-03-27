@@ -70,14 +70,10 @@ class Embedder:
 if __name__ == "__main__":
     embeddor = Embedder(model_name="multi-qa-MiniLM-L6-cos-v1")
     docs = [
-        "web development",
-        "IT",
-        "Artifical Intelligence",
-        "hardware",
-        "software"
+        "products for health care"
     ]
     
-    query = "web development"
+    query = "health care products"
     doc_embeddings = embeddor.embed(docs)
     query_embedding = embeddor.embed(query)
     similarities = embeddor.similarity(query_embedding, doc_embeddings)

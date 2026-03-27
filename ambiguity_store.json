@@ -1,89 +1,202 @@
 {
-  "entries": [
+  "brands": [
     {
-      "ambiguity_key": "sales count metric",
-      "context_key": "brands",
+      "ambiguity_key": "sales definition",
       "options": [
         {
-          "text": "Total quantity sold (sum of quantity)",
+          "text": "Total revenue (sum of total_price)",
           "count": 2
         },
         {
-          "text": "Number of distinct products sold",
+          "text": "Total units sold (sum of quantity)",
           "count": 0
+        },
+        {
+          "text": "number of transaction",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "ambiguity_key": "ranking metric",
+      "options": [
+        {
+          "text": "Total revenue",
+          "count": 3
         },
         {
           "text": "Total quantity sold",
+          "count": 2
+        },
+        {
+          "text": "Number of distinct customers",
           "count": 1
         }
       ]
     },
     {
-      "ambiguity_key": "comparison threshold",
-      "context_key": "brands",
+      "ambiguity_key": "poor performance metric",
       "options": [
         {
-          "text": "Exactly twice as many",
+          "text": "Revenue",
           "count": 1
         },
         {
-          "text": "At least twice as many",
+          "text": "Quantity sold",
+          "count": 0
+        },
+        {
+          "text": "Number of transactions",
+          "count": 0
+        }
+      ]
+    }
+  ],
+  "eco\u2011friendly cosmetic products": [
+    {
+      "ambiguity_key": "performance metric",
+      "options": [
+        {
+          "text": "Total sales revenue",
+          "count": 0
+        },
+        {
+          "text": "Units sold",
           "count": 1
         },
         {
-          "text": "Exactly double",
-          "count": 0
-        },
-        {
-          "text": "At least double (\u2265 2\u00d7)",
-          "count": 0
-        },
-        {
-          "text": "More than double (> 2\u00d7)",
+          "text": "Profit margin",
           "count": 0
         }
       ]
     },
     {
-      "ambiguity_key": "carbon footprint metric",
-      "context_key": "brands",
+      "ambiguity_key": "time window",
       "options": [
         {
-          "text": "Total CO\u2082 emissions (absolute)",
+          "text": "Last month",
+          "count": 0
+        },
+        {
+          "text": "Last quarter",
           "count": 1
         },
         {
-          "text": "Average CO\u2082 emissions per unit sold",
+          "text": "All time",
+          "count": 0
+        }
+      ]
+    }
+  ],
+  "cosmetic products": [
+    {
+      "ambiguity_key": "performance metric",
+      "options": [
+        {
+          "text": "Sales quantity",
+          "count": 0
+        },
+        {
+          "text": "Revenue generated",
           "count": 1
         },
         {
-          "text": "CO\u2082 emissions per unit of revenue",
+          "text": "Number of premium customers purchasing",
+          "count": 0
+        }
+      ]
+    }
+  ],
+  "premium customers": [
+    {
+      "ambiguity_key": "time window",
+      "options": [
+        {
+          "text": "Last month",
           "count": 0
         },
         {
-          "text": "Total carbon emissions (overall amount)",
+          "text": "Last quarter",
           "count": 0
         },
         {
-          "text": "Average carbon emissions per unit sold",
+          "text": "Last year",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "product performance": [
+    {
+      "ambiguity_key": "time window",
+      "options": [
+        {
+          "text": "Last month",
           "count": 0
         },
         {
-          "text": "Carbon emissions per revenue (kg CO\u2082 per $)",
+          "text": "Last quarter",
+          "count": 0
+        },
+        {
+          "text": "All time",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "sales": [
+    {
+      "ambiguity_key": "sales criteria definition",
+      "options": [
+        {
+          "text": "Total revenue for the day",
+          "count": 1
+        },
+        {
+          "text": "Number of orders placed today",
+          "count": 0
+        },
+        {
+          "text": "Average order value for today",
+          "count": 0
+        },
+        {
+          "text": "2.",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "inventory": [
+    {
+      "ambiguity_key": "store scope",
+      "options": [
+        {
+          "text": "Zepto",
+          "count": 1
+        },
+        {
+          "text": "Blinkit",
           "count": 0
         }
       ]
     },
     {
-      "ambiguity_key": "product count metric",
-      "context_key": "products",
+      "ambiguity_key": "inventory metric",
       "options": [
         {
-          "text": "Total quantity sold (sum of quantity)",
+          "text": "Quantity per product",
           "count": 1
         },
         {
-          "text": "Number of distinct product IDs sold",
+          "text": "Total quantity of all products",
+          "count": 0
+        },
+        {
+          "text": "List of products with stock > 0",
           "count": 0
         }
       ]

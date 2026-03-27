@@ -18,7 +18,7 @@ class LM:
         model: str = "openai/gpt-oss-120b",
         api_key: str|None = os.getenv("GROQ_API_KEY"),
         retries: int = 3,
-        temperature: float = 0.2,
+        temperature: float = 0.0,
     ):
         self.model = model
         self.client = Groq(api_key=api_key)
@@ -41,6 +41,7 @@ class LM:
             "model": self.model,
             "messages": messages,
             "temperature": self.temperature,
+            "seed": 42,
         }
 
         for attempt in range(1, self.retries + 1):
@@ -63,8 +64,8 @@ class LM:
 if __name__ == "__main__":
     lm = LM()
     test_messages = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "What is 93251 divide by 893425"}
+        {"role": "system", "content": "you are chat bot"},
+        {"role": "user", "content": "Hi explain about delhi in 10 line"}
     ]
     response = lm(test_messages)
     print("LM Response:", response)

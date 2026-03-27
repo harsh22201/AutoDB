@@ -5,7 +5,7 @@ import json
 
 class IntentAmbiguityResolver:
     def __init__(self, model: str = "openai/gpt-oss-120b", max_iterations: int = 3):
-        self.llm = LM(model=model, temperature=0)
+        self.llm = LM(model=model)
         self.knowledge_store = AmbiguityKnowledgeStore()
         self.max_iterations = max_iterations
 
@@ -79,7 +79,7 @@ class IntentAmbiguityResolver:
             # -----------------------------
             print("\n----------------------------------")
             print(f"Ambiguity {idx}: [{ambiguity_type}] {clarification_question}")
-            print(f"Key: {ambiguity_key} | {context_key}")
+            print(f"Key: {context_key} | {ambiguity_key}")
 
             # -----------------------------
             # 🔎 SEARCH KNOWLEDGE STORE
@@ -87,8 +87,7 @@ class IntentAmbiguityResolver:
             retrieved = self.knowledge_store.search(ambiguity_key, context_key)
 
             if retrieved:
-                print(f"Found similar past ambiguity! [score: {retrieved['score']:.2f}]")
-                print("Previously used clarifications:")
+                print(f"Found! [{retrieved['context_key']}: {retrieved['context_score']:.2f}, {retrieved['ambiguity_key']}: {retrieved['ambiguity_score']:.2f}]")
                 stored_options = retrieved["options"]  # top 3 with percentages
 
                 # Display with percentages
@@ -108,10 +107,9 @@ class IntentAmbiguityResolver:
 
                 # Always update store with selection
                 self.knowledge_store.update(
-                    ambiguity_key,
-                    context_key,
+                    ambiguity_key = retrieved["ambiguity_key"],
+                    context_key = retrieved["context_key"],
                     selected_option=user_text,
-                    all_options=llm_options
                 )
 
             else:
@@ -181,5 +179,5 @@ class ValueAmbiguityDetector:
 
 if __name__ == "__main__":
     iad = IntentAmbiguityResolver()
-    result = iad.resolve("Show me the carbon footprints of brands which have sold twice the number of products in 2025 as compared to 2024")
+    result = iad.resolve("Why are eco-friendly cosmetic products performing poorly among premium customers?")
     print(result)
