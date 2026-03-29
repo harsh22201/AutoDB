@@ -1,0 +1,10 @@
+flask
+flask-cors
+psycopg2-binary
+pandas
+groq
+python-dotenv
+sentence-transformers
+torch
+numpy
+tabulate

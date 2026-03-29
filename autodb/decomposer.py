@@ -1,5 +1,5 @@
-from lm import LM
-from prompts import DECOMPOSER_MSSG
+from autodb.lm import LM
+from autodb.prompts import DECOMPOSER_MSSG
 import json
 
 class Decomposer:

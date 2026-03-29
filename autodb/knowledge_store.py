@@ -1,7 +1,7 @@
 import json
 import os
 import numpy as np
-from embedder import Embedder
+from autodb.embedder import Embedder
 
 class AmbiguityKnowledgeStore:
 

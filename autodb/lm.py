@@ -65,7 +65,7 @@ if __name__ == "__main__":
     lm = LM()
     test_messages = [
         {"role": "system", "content": "you are chat bot"},
-        {"role": "user", "content": "Hi explain about delhi in 10 line"}
+        {"role": "user", "content": "what is log base 21 of 9892412454323.2134124 show final answer"}
     ]
     response = lm(test_messages)
     print("LM Response:", response)

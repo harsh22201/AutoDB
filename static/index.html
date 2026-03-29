@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoDB — Interactive NL2SQL Pipeline</title>
+    <meta
+      name="description"
+      content="AutoDB: An interactive natural language to SQL pipeline for querying structured and unstructured databases."
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- ===== CONNECT SCREEN ===== -->
+    <div id="connect-screen" class="screen active">
+      <div class="connect-container">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect width="48" height="48" rx="12" fill="url(#logo-grad)" />
+              <path
+                d="M14 16h20M14 24h20M14 32h12"
+                stroke="white"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              />
+              <circle
+                cx="34"
+                cy="32"
+                r="6"
+                fill="#fff"
+                fill-opacity="0.2"
+                stroke="white"
+                stroke-width="2"
+              />
+              <path
+                d="M32 32l2 2 3-3"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <defs>
+                <linearGradient id="logo-grad" x1="0" y1="0" x2="48" y2="48">
+                  <stop stop-color="#6366f1" />
+                  <stop offset="1" stop-color="#8b5cf6" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <h1>AutoDB</h1>
+          <p class="subtitle">Interactive NL2SQL Pipeline</p>
+        </div>
+
+        <div class="connect-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="db-name">Database Name</label>
+              <input
+                type="text"
+                id="db-name"
+                value="grocermind"
+                placeholder="e.g. grocermind"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="db-password">Password</label>
+              <input
+                type="password"
+                id="db-password"
+                placeholder="••••••••"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="db-host"
+                >Host <span class="label-badge">Optional</span></label
+              >
+              <input
+                type="text"
+                id="db-host"
+                placeholder="localhost"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="db-port"
+                >Port <span class="label-badge">Optional</span></label
+              >
+              <input
+                type="text"
+                id="db-port"
+                placeholder="5432"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="db-user"
+                >User <span class="label-badge">Optional</span></label
+              >
+              <input
+                type="text"
+                id="db-user"
+                placeholder="postgres"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <button id="connect-btn" class="btn-primary" onclick="connectDB()">
+            <span class="btn-text">Connect</span>
+            <span class="btn-loader" style="display: none"></span>
+          </button>
+
+          <div id="connect-error" class="error-msg" style="display: none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MAIN SCREEN ===== -->
+    <div id="main-screen" class="screen">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <div class="header-logo">
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+              <rect width="48" height="48" rx="12" fill="url(#logo-grad2)" />
+              <path
+                d="M14 16h20M14 24h20M14 32h12"
+                stroke="white"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              />
+              <defs>
+                <linearGradient id="logo-grad2" x1="0" y1="0" x2="48" y2="48">
+                  <stop stop-color="#6366f1" />
+                  <stop offset="1" stop-color="#8b5cf6" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="header-title">AutoDB</span>
+          <span class="header-db" id="header-db-name"></span>
+        </div>
+        <div class="header-right">
+          <button class="btn-ghost" onclick="disconnectDB()">Disconnect</button>
+        </div>
+      </header>
+
+      <!-- Query Input -->
+      <div class="query-section">
+        <div class="query-input-wrap">
+          <textarea
+            id="query-input"
+            rows="2"
+            placeholder="Ask a question about your data in natural language..."
+            autocomplete="off"
+          ></textarea>
+          <button id="submit-btn" class="btn-submit" onclick="submitQuery()">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pipeline Steps Container -->
+      <div
+        id="pipeline-container"
+        class="pipeline-container"
+        style="display: none"
+      >
+        <!-- Steps will be rendered dynamically -->
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -18,6 +18,7 @@ Your job is to:
 - If the unstructured query contains instructions, execute that reasoning using the SQL result as context.
 - If the unstructured query is empty, simply formulate a clear, readable response addressing the original user query using the SQL result.
 - Present the final answer comprehensively but naturally. Do not expose internal terminology like "SQL results", "structured query", or "LLM Query" to the user.
+- If SQL is empty, then inform about it but dont make up the answer.
 
 ==============
 INPUT

@@ -35,18 +35,17 @@ class SQLExecutor:
 
     def __validate_read_only(self, query: str):
         """
-        Ensure query is read-only (SELECT only).
+        Ensure query is read-only (SELECT / WITH only).
         """
-
         cleaned_query = query.strip().lower()
 
         # Block multiple statements
         if ";" in cleaned_query[:-1]:
             raise ValueError("Multiple SQL statements are not allowed.")
 
-        # Must start with SELECT
-        if not cleaned_query.startswith("select"):
-            raise ValueError("Only SELECT queries are allowed (DQL only).")
+        # Allow SELECT or WITH (CTE)
+        if not (cleaned_query.startswith("select") or cleaned_query.startswith("with")):
+            raise ValueError("Only read-only queries (SELECT/CTE) are allowed.")
 
     def execute(self, sql_query: str) -> pd.DataFrame:
 

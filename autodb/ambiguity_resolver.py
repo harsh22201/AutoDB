@@ -1,6 +1,6 @@
-from lm import LM
-from prompts import INTENT_AMBIGUITY_DETECTOR_MSSG, VALUE_AMBIGUITY_DETECTOR_MSSG 
-from knowledge_store import AmbiguityKnowledgeStore
+from autodb.lm import LM
+from autodb.prompts import INTENT_AMBIGUITY_DETECTOR_MSSG, VALUE_AMBIGUITY_DETECTOR_MSSG 
+from autodb.knowledge_store import AmbiguityKnowledgeStore
 import json
 
 class IntentAmbiguityResolver:

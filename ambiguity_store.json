@@ -16,6 +16,23 @@
           "count": 1
         }
       ]
+    },
+    {
+      "ambiguity_key": "eco-friendly definition",
+      "options": [
+        {
+          "text": "Brands with official eco-certification",
+          "count": 1
+        },
+        {
+          "text": "Brands that use biodegradable packaging",
+          "count": 0
+        },
+        {
+          "text": "Brands that use organic ingredients",
+          "count": 0
+        }
+      ]
     }
   ],
   "products": [
@@ -24,15 +41,15 @@
       "options": [
         {
           "text": "Total revenue",
-          "count": 3
+          "count": 5
         },
         {
           "text": "Total quantity sold",
-          "count": 2
+          "count": 3
         },
         {
           "text": "Number of distinct customers",
-          "count": 1
+          "count": 3
         }
       ]
     },
@@ -50,6 +67,78 @@
         {
           "text": "Number of transactions",
           "count": 0
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "brand definition",
+      "options": [
+        {
+          "text": "All brands that are labeled as environmentally friendly",
+          "count": 0
+        },
+        {
+          "text": "Brands with 'Eco' in their name",
+          "count": 0
+        },
+        {
+          "text": "Brands with 'Green' in their name",
+          "count": 0
+        },
+        {
+          "text": "brands which are eco friendly based on their carbon footprints",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "keratin attribute",
+      "options": [
+        {
+          "text": "Contains keratin ingredient",
+          "count": 2
+        },
+        {
+          "text": "Marketed as keratin product",
+          "count": 0
+        },
+        {
+          "text": "Has keratin content in description",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "selection criteria",
+      "options": [
+        {
+          "text": "Random selection",
+          "count": 3
+        },
+        {
+          "text": "Highest total revenue",
+          "count": 0
+        },
+        {
+          "text": "Highest total quantity sold",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "brand environmental friendliness",
+      "options": [
+        {
+          "text": "Brands with a sustainability certification",
+          "count": 0
+        },
+        {
+          "text": "Brands that use recyclable packaging",
+          "count": 0
+        },
+        {
+          "text": "Brands that have a sustainability rating",
+          "count": 1
         }
       ]
     }
@@ -96,11 +185,11 @@
       "options": [
         {
           "text": "Sales quantity",
-          "count": 0
+          "count": 2
         },
         {
           "text": "Revenue generated",
-          "count": 1
+          "count": 2
         },
         {
           "text": "Number of premium customers purchasing",
@@ -197,6 +286,171 @@
         },
         {
           "text": "List of products with stock > 0",
+          "count": 0
+        }
+      ]
+    }
+  ],
+  "hair grooming products": [
+    {
+      "ambiguity_key": "ranking metric",
+      "options": [
+        {
+          "text": "Total revenue generated",
+          "count": 3
+        },
+        {
+          "text": "Total quantity sold",
+          "count": 2
+        },
+        {
+          "text": "Average customer rating",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "expected sales metric",
+      "options": [
+        {
+          "text": "Total revenue generated",
+          "count": 0
+        },
+        {
+          "text": "Total quantity sold",
+          "count": 1
+        },
+        {
+          "text": "Number of orders placed",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "target metric",
+      "options": [
+        {
+          "text": "Total revenue",
+          "count": 0
+        },
+        {
+          "text": "Total quantity sold",
+          "count": 1
+        },
+        {
+          "text": "Total profit",
+          "count": 0
+        },
+        {
+          "text": "Total Revenue generated 10000",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "location": [
+    {
+      "ambiguity_key": "spatial reference",
+      "options": [
+        {
+          "text": "Mumbai city",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "kitchen products": [
+    {
+      "ambiguity_key": "ranking metrics",
+      "options": [
+        {
+          "text": "Total revenue generated",
+          "count": 1
+        },
+        {
+          "text": "Total quantity sold",
+          "count": 0
+        },
+        {
+          "text": "Average customer rating",
+          "count": 0
+        }
+      ]
+    }
+  ],
+  "product categories": [
+    {
+      "ambiguity_key": "ranking metrics",
+      "options": [
+        {
+          "text": "Total revenue generated",
+          "count": 0
+        },
+        {
+          "text": "Total quantity sold",
+          "count": 1
+        },
+        {
+          "text": "Profit margin",
+          "count": 0
+        }
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "ambiguity_key": "common attribute",
+      "options": [
+        {
+          "text": "Common price range",
+          "count": 0
+        },
+        {
+          "text": "Common brand",
+          "count": 0
+        },
+        {
+          "text": "Common store",
+          "count": 0
+        },
+        {
+          "text": "What kind products they are selling and why they huge etc...",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "cosmetics products": [
+    {
+      "ambiguity_key": "environmentally friendly brand definition",
+      "options": [
+        {
+          "text": "Brands with a sustainability rating",
+          "count": 0
+        },
+        {
+          "text": "Brands with a green certification",
+          "count": 2
+        },
+        {
+          "text": "Brands that have an eco\u2011friendly label",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "performance metric",
+      "options": [
+        {
+          "text": "Total revenue generated",
+          "count": 2
+        },
+        {
+          "text": "Total quantity sold",
+          "count": 1
+        },
+        {
+          "text": "Number of distinct customers",
           "count": 0
         }
       ]

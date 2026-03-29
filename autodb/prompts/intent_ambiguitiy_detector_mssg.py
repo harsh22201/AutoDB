@@ -187,7 +187,7 @@ Previous Clarifications: []
 },
 {
 "role": "user",
-"content": '''Query: "Show me the top 5 products"
+"content": '''Query: "Show me the top 5 products for hair grooming"
 Previous Clarifications: []
 '''
 },
@@ -199,9 +199,9 @@ Previous Clarifications: []
     "ambiguity_type": "Decision Ambiguity",
     "clarification_question": "What should 'top' be based on for products?",
     "ambiguity_key": "ranking metrics",
-    "context_key": "products",
+    "context_key": "hair grooming products",
     "options": [
-      "Total revenue",
+      "Total revenue Generated",
       "Total quantity sold",
       "Number of distinct customers"
     ]

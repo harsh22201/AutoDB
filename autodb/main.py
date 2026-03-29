@@ -10,7 +10,6 @@ def main():
     # Initialize components
     sql_executor = SQLExecutor()
     detector = IntentAmbiguityResolver(model="openai/gpt-oss-20b")
-    print(detector.llm.temperature, detector.llm.model)
     analyzer = Analyzer(model="openai/gpt-oss-120b")
     candidate_retriever = CandidateRetriever(sql_executor=sql_executor)
     decomposer = Decomposer(model="openai/gpt-oss-120b")
@@ -42,6 +41,12 @@ def main():
             print(f"[INFO] Analysis result:")
             print(json.dumps(analysis, indent=2))
             
+            query_class = analysis.get("query_class", "undefined").lower()
+
+            if query_class == "undefined":
+                print("\n[SYSTEM] Query class is undefined. Skipping further steps.")
+                continue
+
             # Pop value_ambiguities out — candidates go to decomposer separately
             value_ambiguities = analysis.pop("value_ambiguities", [])
             candidates = []
@@ -65,29 +70,41 @@ def main():
             print("[INFO] Decomposition result:")
             print(json.dumps(decomposition, indent=2))
 
-            print("\n[SYSTEM] --- Step 5: SQL Execution ---")
-            structured_query = decomposition.get("structured_query", "")
             df = None
-            if structured_query:
-                df = sql_executor.execute(structured_query)
-                print(f"[INFO] SQL Result ({len(df)} rows):")
-                print(df.head(20).to_string(index=False))
+            if query_class in ["structured", "hybrid"]:
+                print("\n[SYSTEM] --- Step 5: SQL Execution ---")
+                structured_query = decomposition.get("structured_query", "")
+                if structured_query:
+                    df = sql_executor.execute(structured_query)
+                    print(f"[INFO] SQL Result ({len(df)} rows):")
+                    print(df.head(20).to_string(index=False))
+                else:
+                    print("[INFO] No structured query to execute.")
+                    df = "No structured query executed."
             else:
-                print("[INFO] No structured query to execute.")
-                df = "No structured query executed."
+                print("\n[SYSTEM] --- Step 5: SQL Execution (Skipped for unstructured) ---")
+
+            if query_class in ["unstructured", "hybrid"]:
+                print("\n[SYSTEM] --- Step 6: Final LLM Answer Generation ---")
+                unstructured_query = decomposition.get("unstructured_query", "")
                 
-            print("\n[SYSTEM] --- Step 6: Final LLM Answer Generation ---")
-            unstructured_query = decomposition.get("unstructured_query", "")
-            final_answer = llm_executor.execute(
-                sql_result=df, 
-                unstructured_query=unstructured_query,
-                original_query=query
-            )
-            print("\n===========================================")
-            print("[AUTO DB FINAL ANSWER]")
-            print("===========================================")
-            print(final_answer)
-            print("===========================================\n")
+                if df is None or isinstance(df, str):
+                    df_to_pass = "No structured query executed."
+                else:
+                    df_to_pass = df.head(25)
+
+                final_answer = llm_executor.execute(
+                    sql_result=df_to_pass, 
+                    unstructured_query=unstructured_query,
+                    original_query=query
+                )
+                print("\n===========================================")
+                print("[AUTO DB FINAL ANSWER]")
+                print("===========================================")
+                print(final_answer)
+                print("===========================================\n")
+            else:
+                print("\n[SYSTEM] --- Step 6: Final LLM Answer Generation (Skipped for structured) ---")
             
             print("\n[SYSTEM] Pipeline finished for query.")
         except Exception as e:
