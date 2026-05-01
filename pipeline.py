@@ -303,7 +303,7 @@ class PipelineSession:
             if self.sql_result_df is None or isinstance(self.sql_result_df, str):
                 df_to_pass = "No structured query executed."
             else:
-                df_to_pass = self.sql_result_df.head(25)
+                df_to_pass = self.sql_result_df.head(30)
 
             final_answer = self.llm_executor.execute(
                 sql_result=df_to_pass,

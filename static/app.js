@@ -77,8 +77,11 @@ async function disconnectDB() {
     /* ignore */
   }
   isConnected = false;
-  document.getElementById("pipeline-container").innerHTML = "";
-  document.getElementById("pipeline-container").style.display = "none";
+  document.getElementById("panel-left-steps").innerHTML = "";
+  document.getElementById("panel-middle-steps").innerHTML =
+    '<div class="panel-placeholder" id="middle-placeholder"><span>Submit a query to see analysis, retrieval, and decomposition</span></div>';
+  document.getElementById("panel-right-steps").innerHTML =
+    '<div class="panel-placeholder" id="right-placeholder"><span>SQL results and final answer will appear here</span></div>';
   document.getElementById("query-input").value = "";
   showScreen("connect-screen");
 }
@@ -89,25 +92,30 @@ async function submitQuery() {
   const query = input.value.trim();
   if (!query) return;
 
-  const container = document.getElementById("pipeline-container");
-  container.innerHTML = "";
-  container.style.display = "block";
+  // Clear all panels
+  const leftSteps = document.getElementById("panel-left-steps");
+  const middleSteps = document.getElementById("panel-middle-steps");
+  const rightSteps = document.getElementById("panel-right-steps");
+  leftSteps.innerHTML = "";
+  middleSteps.innerHTML = "";
+  rightSteps.innerHTML = "";
 
   document.getElementById("submit-btn").disabled = true;
+  document.getElementById("execute-btn").disabled = true;
+  window._sqlExtraRows = null;
+  _queryClass = "";
 
-  // Create step cards
-  const steps = [
-    { num: 1, title: "Intent Ambiguity Resolution" },
-    { num: 2, title: "Query Analysis" },
-    { num: 3, title: "Value Ambiguity Retrieval" },
-    { num: 4, title: "Query Decomposition" },
-    { num: 5, title: "SQL Execution" },
-    { num: 6, title: "Final Answer Generation" },
-  ];
+  // Step 1 → Left panel
+  leftSteps.appendChild(createStepCard(1, "Intent Ambiguity Resolution"));
 
-  steps.forEach((s) => {
-    container.appendChild(createStepCard(s.num, s.title));
-  });
+  // Steps 2-4 → Middle panel
+  middleSteps.appendChild(createStepCard(2, "Query Analysis"));
+  middleSteps.appendChild(createStepCard(3, "Value Ambiguity Retrieval"));
+  middleSteps.appendChild(createStepCard(4, "Query Decomposition"));
+
+  // Steps 5-6 → Right panel
+  rightSteps.appendChild(createStepCard(5, "SQL Result"));
+  rightSteps.appendChild(createStepCard(6, "Final Answer"));
 
   // Run Step 1
   await runStep1(query);
@@ -368,6 +376,9 @@ async function submitClarifications() {
 }
 
 // ===== Steps 2-6 =====
+// Stored query class for execution phase
+let _queryClass = "";
+
 async function runRemainingSteps() {
   try {
     // Step 2: Query Analysis
@@ -378,12 +389,12 @@ async function runRemainingSteps() {
       throw { step: 2, error: data2.error, traceback: data2.traceback };
     await renderStep2(data2.step2_analysis, []);
 
-    const queryClass = String(
+    _queryClass = String(
       data2.step2_analysis?.query_class || "",
     ).toLowerCase();
 
     // If undefined, skip everything
-    if (queryClass === "undefined") {
+    if (_queryClass === "undefined") {
       [3, 4, 5, 6].forEach((i) => {
         setStepState(i, "done", "Skipped");
         document.getElementById(`step-${i}`).style.opacity = "0.5";
@@ -408,8 +419,38 @@ async function runRemainingSteps() {
       throw { step: 4, error: data4.error, traceback: data4.traceback };
     await renderStep4(data4.step4_decomposition, []);
 
+    // Enable the Execute button — Steps 5-6 wait for user
+    const execBtn = document.getElementById("execute-btn");
+    execBtn.disabled = false;
+    enableSubmit();
+
+  } catch (e) {
+    if (e.step) {
+      setStepState(e.step, "error", "Error");
+      stepError(e.step, e.error, e.traceback);
+    } else {
+      for (let i = 2; i <= 4; i++) {
+        const card = document.getElementById(`step-${i}`);
+        if (card && card.classList.contains("active")) {
+          setStepState(i, "error", "Error");
+          stepError(i, e.message || "Unknown Error");
+          break;
+        }
+      }
+    }
+    enableSubmit();
+  }
+}
+
+// ===== Execute Button — Steps 5-6 =====
+async function runExecutionSteps() {
+  const execBtn = document.getElementById("execute-btn");
+  execBtn.disabled = true;
+  document.getElementById("submit-btn").disabled = true;
+
+  try {
     // Step 5: SQL Execution
-    if (queryClass === "unstructured") {
+    if (_queryClass === "unstructured") {
       setStepState(5, "done", "Skipped");
       document.getElementById("step-5").style.opacity = "0.5";
     } else {
@@ -422,7 +463,7 @@ async function runRemainingSteps() {
     }
 
     // Step 6: Final Answer
-    if (queryClass === "structured") {
+    if (_queryClass === "structured") {
       setStepState(6, "done", "Skipped");
       document.getElementById("step-6").style.opacity = "0.5";
     } else {
@@ -438,8 +479,7 @@ async function runRemainingSteps() {
       setStepState(e.step, "error", "Error");
       stepError(e.step, e.error, e.traceback);
     } else {
-      // Find active step
-      for (let i = 2; i <= 6; i++) {
+      for (let i = 5; i <= 6; i++) {
         const card = document.getElementById(`step-${i}`);
         if (card && card.classList.contains("active")) {
           setStepState(i, "error", "Error");
@@ -469,54 +509,67 @@ async function renderStep2(analysis, errors) {
                 <span class="analysis-label">Intent Summary</span>
                 <span class="analysis-value">${esc(analysis.intent_summary)}</span>
             </div>
-            
+
             <div class="analysis-row">
                 <span class="analysis-label">Query Class</span>
                 <span class="analysis-badge class-${esc((analysis.query_class || "").toLowerCase())}">${esc(analysis.query_class)}</span>
-            </div>
-            
-            <div class="analysis-row">
-                <span class="analysis-label">Rationale</span>
-                <span class="analysis-value">${esc(analysis.rationale)}</span>
-            </div>
-    `;
+            </div>`;
 
+  // Value ambiguities — compact view (term + columns only, no reason)
   if (analysis.value_ambiguities && analysis.value_ambiguities.length > 0) {
-    html += `<div class="section-label" style="margin-top: 20px;">Value Ambiguities</div>`;
-    html += `<div class="va-list">`;
+    html += `<div class="analysis-row" style="margin-top:4px">
+                <span class="analysis-label">Value Ambiguities</span>
+                <div class="va-list-compact">`;
     analysis.value_ambiguities.forEach((va) => {
-      html += `
-                <div class="va-card">
-                    <div class="va-row">
-                        <span class="va-term-label">Term:</span>
-                        <span class="va-term-val">${esc(va.ambiguous_term)}</span>
-                    </div>
-                    <div class="va-row">
-                        <span class="va-cand-label">Candidates:</span>
-                        <span class="va-cand-val">${
-                          va.candidate_columns
-                            ? va.candidate_columns
-                                .map(
-                                  (c) =>
-                                    `<span class="va-badge-col">${esc(c)}</span>`,
-                                )
-                                .join("")
-                            : "None"
-                        }</span>
-                    </div>
-                    <div class="va-reason">
-                        ${esc(va.reason)}
-                    </div>
-                </div>
-            `;
+      html += `<div class="va-chip">
+                    <span class="va-chip-term">${esc(va.ambiguous_term)}</span>
+                    <span class="va-chip-arrow">→</span>
+                    ${va.candidate_columns ? va.candidate_columns.map((c) => `<span class="va-badge-col">${esc(c)}</span>`).join("") : '<span class="va-chip-none">No candidates</span>'}
+                </div>`;
     });
-    html += `</div>`;
+    html += `</div></div>`;
+  }
+
+  // Hidden details body (rationale + VA reasons)
+  const hasDetails = analysis.rationale || (analysis.value_ambiguities && analysis.value_ambiguities.some(va => va.reason));
+  if (hasDetails) {
+    let detailsHtml = ``;
+    if (analysis.rationale) {
+      detailsHtml += `<div class="analysis-row">
+                    <span class="analysis-label">Rationale</span>
+                    <span class="analysis-value">${esc(analysis.rationale)}</span>
+                </div>`;
+    }
+    if (analysis.value_ambiguities && analysis.value_ambiguities.length > 0) {
+      const reasons = analysis.value_ambiguities.filter(va => va.reason);
+      if (reasons.length > 0) {
+        detailsHtml += `<div class="analysis-row">
+                      <span class="analysis-label">Value Ambiguity Reasons</span>
+                      <div class="va-list">`;
+        reasons.forEach((va) => {
+          detailsHtml += `<div class="va-card">
+                        <div class="va-row">
+                            <span class="va-term-label">Term:</span>
+                            <span class="va-term-val">${esc(va.ambiguous_term)}</span>
+                        </div>
+                        <div class="va-reason" style="border-top:none; margin-top:0; padding-top:0;">${esc(va.reason)}</div>
+                    </div>`;
+        });
+        detailsHtml += `</div></div>`;
+      }
+    }
+    html += `<div class="details-body" id="step2-details">${detailsHtml}</div>`;
   }
 
   html += `</div>`;
 
   body.innerHTML = html;
   setStepState(2, "done", "Done");
+
+  // Add "Details" toggle in step header
+  if (hasDetails) {
+    addHeaderDetailsBtn(2, "step2-details");
+  }
 }
 
 async function renderStep3(vaData, errors) {
@@ -531,39 +584,28 @@ async function renderStep3(vaData, errors) {
   if (!vaData || !vaData.candidates || !vaData.candidates.length) {
     body.innerHTML = `<div class="info-msg">No candidates retrieved.</div>`;
   } else {
-    let html = `<div class="section-label" style="margin-bottom: 12px;">Retrieved Candidates</div>`;
-    html += `<div class="retrieval-list">`;
+    let html = ``;
 
     vaData.candidates.forEach((cand) => {
-      html += `<div class="retrieval-card">
-                <div class="retrieval-header">
-                    <span class="retrieval-label">Ambiguous Term:</span>
-                    <span class="retrieval-term">${esc(cand.ambiguous_term)}</span>
-                </div>
-                <div class="retrieval-body">`;
+      html += `<div class="retrieval-compact">`;
+      html += `<div class="retrieval-compact-header">`;
+      html += `<span class="retrieval-compact-term">${esc(cand.ambiguous_term)}</span>`;
+      html += `</div>`;
 
-      if (
-        cand.candidate_entries &&
-        Object.keys(cand.candidate_entries).length > 0
-      ) {
+      if (cand.candidate_entries && Object.keys(cand.candidate_entries).length > 0) {
         for (const [col, vals] of Object.entries(cand.candidate_entries)) {
-          html += `
-                        <div class="retrieval-col-group">
-                            <div class="retrieval-col-name">${esc(col)}</div>
-                            <div class="retrieval-vals">
-                                ${vals.map((v) => `<span class="retrieval-val-badge">${esc(String(v))}</span>`).join("")}
-                            </div>
-                        </div>
-                    `;
+          html += `<div class="retrieval-compact-row">`;
+          html += `<span class="retrieval-compact-col">${esc(col)}</span>`;
+          html += `<div class="retrieval-compact-vals">${vals.map((v) => `<span class="retrieval-val-badge">${esc(String(v))}</span>`).join("")}</div>`;
+          html += `</div>`;
         }
       } else {
-        html += `<div class="info-msg" style="padding: 6px 10px; font-size: 12px;">No matches found for this term.</div>`;
+        html += `<div class="info-msg" style="padding: 4px 10px; font-size: 12px;">No matches found.</div>`;
       }
 
-      html += `</div></div>`;
+      html += `</div>`;
     });
 
-    html += `</div>`;
     body.innerHTML = html;
   }
   setStepState(3, "done", "Done");
@@ -599,23 +641,29 @@ async function renderStep4(decomposition, errors) {
         `;
   }
 
-  if (decomposition.rationale) {
-    html += `
-            <div class="analysis-row">
-                <span class="analysis-label">Rationale</span>
-                <span class="analysis-value">${esc(decomposition.rationale)}</span>
-            </div>
-        `;
-  }
-
   if (!decomposition.structured_query && !decomposition.unstructured_query) {
     html += `<div class="info-msg">No structured or unstructured queries were decomposed.</div>`;
+  }
+
+  // Hidden rationale body
+  if (decomposition.rationale) {
+    html += `<div class="details-body" id="step4-details">
+                <div class="analysis-row">
+                    <span class="analysis-label">Rationale</span>
+                    <span class="analysis-value">${esc(decomposition.rationale)}</span>
+                </div>
+            </div>`;
   }
 
   html += `</div>`;
 
   body.innerHTML = html;
   setStepState(4, "done", "Done");
+
+  // Add "Details" toggle in step header
+  if (decomposition.rationale) {
+    addHeaderDetailsBtn(4, "step4-details");
+  }
 }
 
 async function renderStep5(sqlData, errors) {
@@ -631,18 +679,31 @@ async function renderStep5(sqlData, errors) {
     body.innerHTML = `<div class="info-msg">${esc(sqlData?.message || "No structured query to execute.")}</div>`;
   } else {
     let html = ``;
+    const PREVIEW_ROWS = 3;
 
     if (sqlData.columns.length > 0 && sqlData.rows.length > 0) {
-      html += `<div class="section-label" style="margin-bottom: 8px;">Results</div>`;
-      html += `<div class="data-table-wrap"><table class="data-table">`;
+      const totalRows = sqlData.rows.length;
+      const hasMore = totalRows > PREVIEW_ROWS;
+
+      // Preview table (first 5 rows)
+      html += `<div class="data-table-wrap"><table class="data-table" id="sql-result-table">`;
       html += `<thead><tr>${sqlData.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>`;
       html += `<tbody>`;
-      const maxRows = Math.min(sqlData.rows.length, 50);
-      for (let i = 0; i < maxRows; i++) {
+      const showCount = Math.min(totalRows, PREVIEW_ROWS);
+      for (let i = 0; i < showCount; i++) {
         html += `<tr>${sqlData.rows[i].map((v) => `<td>${esc(String(v ?? ""))}</td>`).join("")}</tr>`;
       }
       html += `</tbody></table></div>`;
-      html += `<div class="row-count">${sqlData.row_count} row${sqlData.row_count !== 1 ? "s" : ""} returned${sqlData.row_count > 50 ? " (showing first 50)" : ""}</div>`;
+
+      // Row count
+      html += `<div class="row-count">${sqlData.row_count} row${sqlData.row_count !== 1 ? "s" : ""} returned${hasMore ? " (showing first " + PREVIEW_ROWS + ")" : ""}</div>`;
+
+      // Store extra rows for expansion
+      if (hasMore) {
+        window._sqlExtraRows = sqlData.rows.slice(PREVIEW_ROWS);
+      } else {
+        window._sqlExtraRows = null;
+      }
     } else {
       html += `<div class="info-msg">Query returned 0 rows.</div>`;
     }
@@ -650,6 +711,51 @@ async function renderStep5(sqlData, errors) {
     body.innerHTML = html;
   }
   setStepState(5, "done", "Done");
+
+  // Add expand toggle in step header if there are extra rows
+  if (window._sqlExtraRows && window._sqlExtraRows.length > 0) {
+    const stepHeader = document.querySelector("#step-5 .step-header");
+    if (stepHeader && !document.getElementById("expand-rows-btn")) {
+      const expandBtn = document.createElement("button");
+      expandBtn.id = "expand-rows-btn";
+      expandBtn.className = "expand-rows-btn";
+      expandBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> All rows`;
+      expandBtn.onclick = function(e) {
+        e.stopPropagation();
+        toggleAllRows(this);
+      };
+      stepHeader.appendChild(expandBtn);
+    }
+  }
+}
+
+function toggleAllRows(btn) {
+  const table = document.getElementById("sql-result-table");
+  if (!table) return;
+  const tbody = table.querySelector("tbody");
+  const isExpanded = btn.classList.contains("expanded");
+
+  if (isExpanded) {
+    // Collapse — remove extra rows
+    const rows = tbody.querySelectorAll("tr");
+    const PREVIEW_ROWS = 3;
+    for (let i = rows.length - 1; i >= PREVIEW_ROWS; i--) {
+      rows[i].remove();
+    }
+    btn.classList.remove("expanded");
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> All rows`;
+  } else {
+    // Expand — add extra rows
+    if (window._sqlExtraRows) {
+      window._sqlExtraRows.forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = row.map((v) => `<td>${esc(String(v ?? ""))}</td>`).join("");
+        tbody.appendChild(tr);
+      });
+    }
+    btn.classList.add("expanded");
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg> Collapse`;
+  }
 }
 
 async function renderStep6(finalAnswer, errors) {
@@ -680,6 +786,26 @@ function stepError(num, msg, tb) {
 
 function enableSubmit() {
   document.getElementById("submit-btn").disabled = false;
+}
+
+function addHeaderDetailsBtn(stepNum, detailsBodyId) {
+  const stepHeader = document.querySelector(`#step-${stepNum} .step-header`);
+  if (!stepHeader) return;
+  const btn = document.createElement("button");
+  btn.className = "expand-rows-btn";
+  btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Details`;
+  btn.onclick = function(e) {
+    e.stopPropagation();
+    const body = document.getElementById(detailsBodyId);
+    if (!body) return;
+    const isOpen = body.style.display === "block";
+    body.style.display = isOpen ? "none" : "block";
+    btn.classList.toggle("expanded", !isOpen);
+    btn.innerHTML = !isOpen
+      ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg> Details`
+      : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Details`;
+  };
+  stepHeader.appendChild(btn);
 }
 
 function delay(ms) {

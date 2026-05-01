@@ -22,7 +22,7 @@
       "options": [
         {
           "text": "Brands with official eco-certification",
-          "count": 1
+          "count": 3
         },
         {
           "text": "Brands that use biodegradable packaging",
@@ -139,6 +139,23 @@
         {
           "text": "Brands that have a sustainability rating",
           "count": 1
+        }
+      ]
+    },
+    {
+      "ambiguity_key": "product selection",
+      "options": [
+        {
+          "text": "Provide a list of product names",
+          "count": 0
+        },
+        {
+          "text": "Provide a list of product categories",
+          "count": 1
+        },
+        {
+          "text": "Provide a list of product IDs",
+          "count": 0
         }
       ]
     }
@@ -430,11 +447,11 @@
         },
         {
           "text": "Brands with a green certification",
-          "count": 2
+          "count": 3
         },
         {
           "text": "Brands that have an eco\u2011friendly label",
-          "count": 0
+          "count": 1
         }
       ]
     },
@@ -443,14 +460,52 @@
       "options": [
         {
           "text": "Total revenue generated",
-          "count": 2
+          "count": 19
         },
         {
           "text": "Total quantity sold",
-          "count": 1
+          "count": 6
         },
         {
           "text": "Number of distinct customers",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "brand sustainability": [
+    {
+      "ambiguity_key": "definition of environmentally friendly",
+      "options": [
+        {
+          "text": "Brands with official eco\u2011certifications",
+          "count": 2
+        },
+        {
+          "text": "Brands that use biodegradable or recyclable packaging",
+          "count": 3
+        },
+        {
+          "text": "Brands known for sustainable sourcing practices",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "customers": [
+    {
+      "ambiguity_key": "selection criteria",
+      "options": [
+        {
+          "text": "Randomly chosen customers",
+          "count": 1
+        },
+        {
+          "text": "Top customers by total expenditure",
+          "count": 0
+        },
+        {
+          "text": "Top customers by number of orders",
           "count": 0
         }
       ]

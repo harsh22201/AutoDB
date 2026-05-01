@@ -197,7 +197,7 @@ Previous Clarifications: []
 [
   {
     "ambiguity_type": "Decision Ambiguity",
-    "clarification_question": "What should 'top' be based on for products?",
+    "clarification_question": "What should 'top' be based on for products environment friendly brand?",
     "ambiguity_key": "ranking metrics",
     "context_key": "hair grooming products",
     "options": [

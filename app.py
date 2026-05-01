@@ -143,4 +143,20 @@ def get_config():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    import socket
+    try:
+        print(f"\n * Server is accessible locally at: http://127.0.0.1:5000")
+        
+        # Try to find all network IPs (including Tailscale)
+        hostname = socket.gethostname()
+        all_ips = socket.gethostbyname_ex(hostname)[2]
+        
+        for ip in all_ips:
+            if not ip.startswith("127."):
+                label = "Tailscale IP" if ip.startswith("100.") else "Local Network IP"
+                print(f" * Server is accessible on your {label} at: http://{ip}:5000")
+                
+        print(f" * (Note: Use the Tailscale IP (100.x.x.x) for the remote PC)\n")
+    except Exception:
+        pass
+    app.run(host='0.0.0.0', debug=True, port=5000)
